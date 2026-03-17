@@ -20,14 +20,15 @@ class ConditionRow(QFrame):
     def init_ui(self):
         self.setStyleSheet("""
             ConditionRow {
-                background-color: #fafafa;
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
                 border-radius: 6px;
             }
         """)
         
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 6, 8, 6)
-        layout.setSpacing(8)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(10)
         
         # 字段
         self.field_input = QLineEdit()
@@ -85,14 +86,15 @@ class ColumnRow(QFrame):
     def init_ui(self):
         self.setStyleSheet("""
             ColumnRow {
-                background-color: #fafafa;
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
                 border-radius: 6px;
             }
         """)
         
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 6, 8, 6)
-        layout.setSpacing(8)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(10)
         
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("列名")
@@ -141,14 +143,15 @@ class SetRow(QFrame):
     def init_ui(self):
         self.setStyleSheet("""
             SetRow {
-                background-color: #fafafa;
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
                 border-radius: 6px;
             }
         """)
         
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 6, 8, 6)
-        layout.setSpacing(8)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(10)
         
         self.field_input = QLineEdit()
         self.field_input.setPlaceholderText("字段")

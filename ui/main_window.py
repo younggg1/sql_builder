@@ -5,7 +5,8 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTextEdit, QLabel, QComboBox, QScrollArea, QSplitter, 
-    QLineEdit, QStatusBar, QApplication, QSizePolicy, QGridLayout
+    QLineEdit, QStatusBar, QApplication, QSizePolicy, QGridLayout,
+    QFrame
 )
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont, QIcon
@@ -14,6 +15,8 @@ from .styles import STYLESHEET
 from .components import ConditionRow, ColumnRow, SetRow
 from builder.generator import SQLGenerator
 
+import os
+import sys
 
 class MainWindow(QMainWindow):
     """主窗口"""
@@ -24,6 +27,14 @@ class MainWindow(QMainWindow):
         self.current_operation = "SELECT"
         self.init_ui()
     
+    def get_resource_path(self, relative_path):
+        """获取资源绝对路径，兼容 PyInstaller"""
+        if hasattr(sys, '_MEIPASS'):
+            return os.path.join(sys._MEIPASS, relative_path)
+        # 开发模式下返回项目根目录的路径
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(base_path, relative_path)
+    
     def init_ui(self):
         """初始化界面"""
         self.setWindowTitle("SQL Builder")
@@ -31,7 +42,8 @@ class MainWindow(QMainWindow):
         
         # 设置窗口图标
         try:
-            self.setWindowIcon(QIcon("logofast_1771237572568.png"))
+            icon_path = self.get_resource_path("logofast_1771237572568.png")
+            self.setWindowIcon(QIcon(icon_path))
         except:
             pass
         
@@ -39,6 +51,7 @@ class MainWindow(QMainWindow):
         
         # 中央组件
         central = QWidget()
+        central.setObjectName("central_widget")
         self.setCentralWidget(central)
         main_layout = QVBoxLayout(central)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -93,16 +106,20 @@ class MainWindow(QMainWindow):
     def create_title_bar(self):
         """创建标题栏"""
         widget = QWidget()
-        widget.setFixedHeight(56)
-        widget.setStyleSheet("background-color: #f3f3f3;")
+        widget.setObjectName("title_bar")
+        widget.setFixedHeight(64)
+        widget.setStyleSheet("background-color: white; border-bottom: 1px solid #e0e0e0;")
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(24, 0, 24, 0)
         
         # 标题 - 左上角
-        title = QLabel("SQL Query Builder - SQL语句生成工具")
-        title.setFont(QFont("Microsoft YaHei", 20, QFont.Weight.Bold))
-        title.setStyleSheet("color: #0078d4; padding: 10px 0;")
+        title = QLabel("SQL Query Builder")
+        title.setObjectName("main_title")
         layout.addWidget(title)
+        
+        subtitle = QLabel("SQL 语句生成工具")
+        subtitle.setStyleSheet("color: #666666; margin-left: 10px; font-size: 14px;")
+        layout.addWidget(subtitle)
         
         layout.addStretch()
         
@@ -110,53 +127,61 @@ class MainWindow(QMainWindow):
     
     def create_left_panel(self):
         """创建左侧面板"""
-        widget = QWidget()
-        widget.setStyleSheet("background-color: #f3f3f3;")
-        layout = QVBoxLayout(widget)
+        container = QWidget()
+        layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 8, 0)
-        layout.setSpacing(14)
+        
+        # 包装在卡片中
+        card = QFrame()
+        card.setObjectName("card")
+        card_layout = QVBoxLayout(card)
+        card_layout.setContentsMargins(16, 16, 16, 16)
         
         # 滚动区
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll.setStyleSheet("border: none; background: transparent;")
         
         self.left_content = QWidget()
-        self.left_content.setStyleSheet("background-color: #f3f3f3;")
         self.left_layout = QVBoxLayout(self.left_content)
-        self.left_layout.setContentsMargins(0, 0, 0, 0)
-        self.left_layout.setSpacing(14)
+        self.left_layout.setContentsMargins(0, 0, 10, 0)
+        self.left_layout.setSpacing(16)
         
         scroll.setWidget(self.left_content)
-        layout.addWidget(scroll)
+        card_layout.addWidget(scroll)
+        layout.addWidget(card)
         
-        return widget
+        return container
     
     def create_right_panel(self):
         """创建右侧面板"""
-        widget = QWidget()
-        widget.setStyleSheet("background-color: #f3f3f3;")
-        layout = QVBoxLayout(widget)
+        container = QWidget()
+        layout = QVBoxLayout(container)
         layout.setContentsMargins(8, 0, 0, 0)
-        layout.setSpacing(14)
+        
+        # 包装在卡片中
+        card = QFrame()
+        card.setObjectName("card")
+        card_layout = QVBoxLayout(card)
+        card_layout.setContentsMargins(16, 16, 16, 16)
+        card_layout.setSpacing(12)
         
         # 预览标题
         preview_title = QLabel("📄 SQL 预览")
-        preview_title.setStyleSheet("font-size: 14px; font-weight: 600; color: #ffffff;")
-        layout.addWidget(preview_title)
+        preview_title.setStyleSheet("font-size: 13px; font-weight: 600; color: #5c5c5c; text-transform: uppercase; letter-spacing: 0.5px;")
+        card_layout.addWidget(preview_title)
         
         # SQL 预览
         self.sql_preview = QTextEdit()
         self.sql_preview.setObjectName("sql_preview")
         self.sql_preview.setPlaceholderText("生成的 SQL 将显示在这里...")
         self.sql_preview.setReadOnly(True)
-        # 关键：设置大小策略，避免过度扩张
         self.sql_preview.setSizePolicy(
             QSizePolicy.Policy.Expanding,
             QSizePolicy.Policy.Expanding
         )
-        layout.addWidget(self.sql_preview, 1)  # 添加 stretch=1
+        card_layout.addWidget(self.sql_preview, 1)
         
         # 按钮组
         btn_layout = QHBoxLayout()
@@ -174,9 +199,10 @@ class MainWindow(QMainWindow):
         clear_btn.clicked.connect(self.clear_all)
         btn_layout.addWidget(clear_btn)
         
-        layout.addLayout(btn_layout)
+        card_layout.addLayout(btn_layout)
+        layout.addWidget(card)
         
-        return widget
+        return container
     
     def clear_left(self):
         """清空左侧布局"""
@@ -190,6 +216,8 @@ class MainWindow(QMainWindow):
         label = QLabel(text)
         label.setObjectName("group_title")
         self.left_layout.addWidget(label)
+        # 增加一些底部边距
+        label.setStyleSheet("margin-top: 4px;")
     
     def create_text_input(self, placeholder, obj_name):
         """创建文本输入框"""
